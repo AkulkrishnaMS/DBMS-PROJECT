@@ -5,7 +5,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "create-admin": "node --env-file=.env scripts/create-admin.js"
+    "create-admin": "node --env-file=.env scripts/create-admin.js",
+    "seed": "node --env-file=.env scripts/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
