@@ -1,0 +1,373 @@
+[
+ {
+  "title": "Sum of Two Numbers",
+  "difficulty": 800,
+  "statement": "Given two integers a and b, print their sum.\n\nInput: one line with two integers a and b (|a|, |b| <= 10^9).\nOutput: a single integer, the value of a + b.",
+  "cases": [
+   {
+    "input": "3 4\n",
+    "expected_output": "7\n",
+    "is_sample": true
+   },
+   {
+    "input": "-5 12\n",
+    "expected_output": "7\n",
+    "is_sample": false
+   },
+   {
+    "input": "1000000000 1000000000\n",
+    "expected_output": "2000000000\n",
+    "is_sample": false
+   },
+   {
+    "input": "0 0\n",
+    "expected_output": "0\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Palindrome Check",
+  "difficulty": 800,
+  "statement": "A string is a palindrome if it reads the same forwards and backwards. Given a string of lowercase letters, decide whether it is a palindrome.\n\nInput: one line containing the string s (1 <= |s| <= 1000).\nOutput: YES if s is a palindrome, otherwise NO.",
+  "cases": [
+   {
+    "input": "racecar\n",
+    "expected_output": "YES\n",
+    "is_sample": true
+   },
+   {
+    "input": "hello\n",
+    "expected_output": "NO\n",
+    "is_sample": false
+   },
+   {
+    "input": "a\n",
+    "expected_output": "YES\n",
+    "is_sample": false
+   },
+   {
+    "input": "abccba\n",
+    "expected_output": "YES\n",
+    "is_sample": false
+   },
+   {
+    "input": "abca\n",
+    "expected_output": "NO\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Count Vowels",
+  "difficulty": 800,
+  "statement": "Count how many vowels (a, e, i, o, u) appear in a line of text made of lowercase letters and spaces.\n\nInput: one line of text (at most 1000 characters).\nOutput: a single integer, the number of vowels.",
+  "cases": [
+   {
+    "input": "programming\n",
+    "expected_output": "3\n",
+    "is_sample": true
+   },
+   {
+    "input": "aeiou\n",
+    "expected_output": "5\n",
+    "is_sample": false
+   },
+   {
+    "input": "xyz\n",
+    "expected_output": "0\n",
+    "is_sample": false
+   },
+   {
+    "input": "competitive programming contest\n",
+    "expected_output": "10\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Maximum Element",
+  "difficulty": 800,
+  "statement": "Given an array of integers, find its largest element.\n\nInput: the first line contains n (1 <= n <= 1000). The second line contains n integers.\nOutput: the maximum value in the array.",
+  "cases": [
+   {
+    "input": "5\n3 9 2 7 1\n",
+    "expected_output": "9\n",
+    "is_sample": true
+   },
+   {
+    "input": "1\n-4\n",
+    "expected_output": "-4\n",
+    "is_sample": false
+   },
+   {
+    "input": "4\n-5 -2 -9 -7\n",
+    "expected_output": "-2\n",
+    "is_sample": false
+   },
+   {
+    "input": "6\n10 10 10 10 10 10\n",
+    "expected_output": "10\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Sort Descending",
+  "difficulty": 900,
+  "statement": "Sort an array of integers from largest to smallest.\n\nInput: the first line contains n (1 <= n <= 1000). The second line contains n integers.\nOutput: the n integers in non-increasing order, separated by single spaces.",
+  "cases": [
+   {
+    "input": "5\n3 1 4 1 5\n",
+    "expected_output": "5 4 3 1 1\n",
+    "is_sample": true
+   },
+   {
+    "input": "1\n7\n",
+    "expected_output": "7\n",
+    "is_sample": false
+   },
+   {
+    "input": "4\n-1 -3 -2 -4\n",
+    "expected_output": "-1 -2 -3 -4\n",
+    "is_sample": false
+   },
+   {
+    "input": "6\n9 8 7 6 5 4\n",
+    "expected_output": "9 8 7 6 5 4\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Prime Check",
+  "difficulty": 1000,
+  "statement": "A prime number is greater than 1 and has no divisors other than 1 and itself. Decide whether a given number is prime.\n\nInput: one integer n (1 <= n <= 10^9).\nOutput: YES if n is prime, otherwise NO.",
+  "cases": [
+   {
+    "input": "17\n",
+    "expected_output": "YES\n",
+    "is_sample": true
+   },
+   {
+    "input": "1\n",
+    "expected_output": "NO\n",
+    "is_sample": false
+   },
+   {
+    "input": "2\n",
+    "expected_output": "YES\n",
+    "is_sample": false
+   },
+   {
+    "input": "1000000007\n",
+    "expected_output": "YES\n",
+    "is_sample": false
+   },
+   {
+    "input": "999999999\n",
+    "expected_output": "NO\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Factorial Modulo",
+  "difficulty": 1000,
+  "statement": "Compute n! (n factorial, the product 1 * 2 * ... * n, with 0! = 1) modulo 1000000007.\n\nInput: one integer n (0 <= n <= 1000).\nOutput: n! mod 1000000007.",
+  "cases": [
+   {
+    "input": "5\n",
+    "expected_output": "120\n",
+    "is_sample": true
+   },
+   {
+    "input": "0\n",
+    "expected_output": "1\n",
+    "is_sample": false
+   },
+   {
+    "input": "20\n",
+    "expected_output": "146326063\n",
+    "is_sample": false
+   },
+   {
+    "input": "1000\n",
+    "expected_output": "641419708\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Balanced Brackets",
+  "difficulty": 1100,
+  "statement": "A string made only of the characters ( ) [ ] { } is balanced if every opening bracket is closed by the same kind of bracket in the correct order. Decide whether the given string is balanced.\n\nInput: one line with the string (1 <= length <= 1000).\nOutput: YES if the string is balanced, otherwise NO.",
+  "cases": [
+   {
+    "input": "([]{})\n",
+    "expected_output": "YES\n",
+    "is_sample": true
+   },
+   {
+    "input": "([)]\n",
+    "expected_output": "NO\n",
+    "is_sample": false
+   },
+   {
+    "input": "((\n",
+    "expected_output": "NO\n",
+    "is_sample": false
+   },
+   {
+    "input": "{[()]}()\n",
+    "expected_output": "YES\n",
+    "is_sample": false
+   },
+   {
+    "input": "]\n",
+    "expected_output": "NO\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Fibonacci Number",
+  "difficulty": 1200,
+  "statement": "The Fibonacci sequence starts with F(0) = 0 and F(1) = 1, and each next term is the sum of the previous two. Compute F(n) modulo 1000000007 using dynamic programming.\n\nInput: one integer n (0 <= n <= 100000).\nOutput: F(n) mod 1000000007.",
+  "cases": [
+   {
+    "input": "10\n",
+    "expected_output": "55\n",
+    "is_sample": true
+   },
+   {
+    "input": "0\n",
+    "expected_output": "0\n",
+    "is_sample": false
+   },
+   {
+    "input": "1\n",
+    "expected_output": "1\n",
+    "is_sample": false
+   },
+   {
+    "input": "100000\n",
+    "expected_output": "911435502\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Connected Components",
+  "difficulty": 1300,
+  "statement": "An undirected graph has n vertices numbered 1 to n and m edges. Count its connected components, where a component is a maximal set of vertices that can reach each other through edges.\n\nInput: the first line contains n and m. Each of the next m lines contains two vertices u and v joined by an edge.\nOutput: the number of connected components.",
+  "cases": [
+   {
+    "input": "5 3\n1 2\n2 3\n4 5\n",
+    "expected_output": "2\n",
+    "is_sample": true
+   },
+   {
+    "input": "1 0\n",
+    "expected_output": "1\n",
+    "is_sample": false
+   },
+   {
+    "input": "4 0\n",
+    "expected_output": "4\n",
+    "is_sample": false
+   },
+   {
+    "input": "6 5\n1 2\n2 3\n3 1\n4 5\n5 6\n",
+    "expected_output": "2\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Shortest Path in a Grid",
+  "difficulty": 1400,
+  "statement": "A grid has n rows and m columns. Each cell is free ('.') or a wall ('#'). Starting at the top-left cell you may move one step up, down, left or right onto a free cell. Find the minimum number of steps needed to reach the bottom-right cell, or report that it is impossible.\n\nInput: the first line contains n and m. Each of the next n lines contains m characters.\nOutput: the minimum number of steps, or -1 if the bottom-right cell cannot be reached.",
+  "cases": [
+   {
+    "input": "3 3\n...\n.#.\n...\n",
+    "expected_output": "4\n",
+    "is_sample": true
+   },
+   {
+    "input": "2 2\n.#\n#.\n",
+    "expected_output": "-1\n",
+    "is_sample": false
+   },
+   {
+    "input": "1 1\n.\n",
+    "expected_output": "0\n",
+    "is_sample": false
+   },
+   {
+    "input": "4 5\n.....\n.###.\n...#.\n.#...\n",
+    "expected_output": "7\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Minimum Coins",
+  "difficulty": 1500,
+  "statement": "You have an unlimited supply of coins of given denominations. Find the minimum number of coins needed to make an exact amount, or report that it is impossible. This is a classic dynamic programming problem.\n\nInput: the first line contains n (number of denominations) and the target amount (0 <= amount <= 10000). The second line contains the n coin values.\nOutput: the minimum number of coins, or -1 if the amount cannot be made.",
+  "cases": [
+   {
+    "input": "3 11\n1 2 5\n",
+    "expected_output": "3\n",
+    "is_sample": true
+   },
+   {
+    "input": "2 3\n2 4\n",
+    "expected_output": "-1\n",
+    "is_sample": false
+   },
+   {
+    "input": "1 0\n7\n",
+    "expected_output": "0\n",
+    "is_sample": false
+   },
+   {
+    "input": "4 100\n1 5 10 25\n",
+    "expected_output": "4\n",
+    "is_sample": false
+   },
+   {
+    "input": "3 7\n2 3 5\n",
+    "expected_output": "2\n",
+    "is_sample": false
+   }
+  ]
+ },
+ {
+  "title": "Longest Increasing Subsequence",
+  "difficulty": 1600,
+  "statement": "Given an array of integers, find the length of its longest strictly increasing subsequence. A subsequence keeps the original order but may skip elements. Solve it with dynamic programming.\n\nInput: the first line contains n (1 <= n <= 1000). The second line contains n integers.\nOutput: the length of the longest strictly increasing subsequence.",
+  "cases": [
+   {
+    "input": "6\n10 9 2 5 3 7\n",
+    "expected_output": "3\n",
+    "is_sample": true
+   },
+   {
+    "input": "1\n5\n",
+    "expected_output": "1\n",
+    "is_sample": false
+   },
+   {
+    "input": "5\n5 4 3 2 1\n",
+    "expected_output": "1\n",
+    "is_sample": false
+   },
+   {
+    "input": "8\n1 3 2 4 3 5 4 6\n",
+    "expected_output": "5\n",
+    "is_sample": false
+   }
+  ]
+ }
+]
