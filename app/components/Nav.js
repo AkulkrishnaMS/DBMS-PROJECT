@@ -34,6 +34,7 @@ export default function Nav() {
           {link('/contests', 'Contests')}
           {link('/leaderboard', 'Leaderboard')}
           {user && link('/submissions', 'My submissions')}
+          {user && user.role === 'admin' && link('/admin', 'Admin')}
         </div>
         <div className="nav-user">
           {user && (

@@ -127,3 +127,22 @@ td.mono { font-family: ui-monospace, Consolas, monospace; font-size: 13px; white
 .section-head h3 { margin: 0; }
 td.num, th.num { text-align: right; }
 .me-row { background: var(--surface); font-weight: 600; }
+
+/* ---------- admin ---------- */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.tab { background: none; border: none; border-bottom: 2px solid transparent; padding: 8px 14px;
+  font: inherit; color: var(--text); cursor: pointer; margin-bottom: -1px; }
+.tab:hover { color: var(--accent); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.form-row > div { flex: 1; min-width: 160px; }
+.form-wrap { max-width: 720px; }
+textarea.field { width: 100%; padding: 8px 10px; resize: vertical; font-family: inherit; }
+textarea.mono { font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
+.case-box { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin: 10px 0;
+  background: var(--surface); }
+.case-head { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.check { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 14px; }
+.check input { width: auto; }
+.success { color: var(--ok); font-size: 14px; margin-top: 12px; }
+.row-actions { display: flex; gap: 10px; align-items: center; margin-top: 16px; }
