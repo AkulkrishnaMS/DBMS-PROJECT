@@ -1,0 +1,41 @@
+:root {
+  --bg: #ffffff; --surface: #f6f7f9; --text: #1a1d21; --muted: #5f6b7a;
+  --border: #d9dee5; --accent: #2457d6; --accent-text: #ffffff; --danger: #b42318;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171c; --surface: #1c2027; --text: #e8eaed; --muted: #9aa5b4;
+    --border: #2e353f; --accent: #6b93f5; --accent-text: #0e1116; --danger: #f08a80;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+
+.nav { border-bottom: 1px solid var(--border); background: var(--surface); }
+.nav-inner { max-width: 960px; margin: 0 auto; padding: 10px 16px;
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.brand { font-weight: 700; color: var(--text); }
+.nav-links { display: flex; gap: 16px; flex: 1; flex-wrap: wrap; }
+.nav-user { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 14px; }
+
+.card { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 24px; max-width: 400px; margin: 40px auto; }
+.card h1 { margin: 0 0 16px; font-size: 22px; }
+label { display: block; font-size: 14px; margin: 12px 0 4px; }
+input { width: 100%; padding: 8px 10px; font: inherit; color: var(--text);
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
+input:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+.btn { display: inline-block; padding: 8px 14px; font: inherit; cursor: pointer;
+  border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-text); }
+.btn:disabled { opacity: .6; cursor: default; }
+.btn-plain { background: transparent; color: var(--text); border-color: var(--border); }
+.btn-wide { width: 100%; margin-top: 18px; }
+.error { color: var(--danger); font-size: 14px; margin-top: 12px; }
+.switch { margin-top: 16px; font-size: 14px; color: var(--muted); }
+.link-btn { background: none; border: none; padding: 0; font: inherit; color: var(--accent); cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+.muted { color: var(--muted); }
