@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import DiffBadge from '../../components/DiffBadge';
 
 const STARTERS = {
   python: '# read from input(), print the answer\n',
@@ -67,7 +68,7 @@ export default function ProblemPage() {
   return (
     <main>
       <p><Link href="/problems">← All problems</Link></p>
-      <h1>{problem.title} <span className="badge">{problem.difficulty}</span></h1>
+      <h1>{problem.title} <DiffBadge d={problem.difficulty} /></h1>
       <p className="muted">Time limit {problem.time_limit_ms} ms · Memory limit {Math.round(problem.memory_limit_kb / 1024)} MB</p>
 
       <div className="layout">
@@ -120,7 +121,7 @@ export default function ProblemPage() {
               </div>
               {result.cases.length > 0 && (
                 <div className="cases">
-                  {result.cases.map((c) => <span key={c.case_idx}>Test {c.case_idx + 1}: {c.verdict}</span>)}
+                  {result.cases.map((c) => <span key={c.case_idx} className={'case v-' + c.verdict}>Test {c.case_idx + 1}: {c.verdict}</span>)}
                 </div>
               )}
               {result.compile_output && <div className="compile">{result.compile_output}</div>}

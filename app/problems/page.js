@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import DiffBadge from '../components/DiffBadge';
 
 // Difficulty bands match the 800..3000 scale used in the seed data.
 const BANDS = [
@@ -46,18 +47,18 @@ export default function ProblemsPage() {
       {rows === null ? <p className="muted">Loading…</p> : rows.length === 0 ? (
         <p className="muted">No problems match.</p>
       ) : (
-        <table>
+        <div className="table-wrap"><table>
           <thead><tr><th>#</th><th>Title</th><th>Difficulty</th></tr></thead>
           <tbody>
             {rows.map((p) => (
               <tr key={p.problem_id}>
                 <td>{p.problem_id}</td>
                 <td><Link href={`/problems/${p.problem_id}`}>{p.title}</Link></td>
-                <td><span className="badge">{p.difficulty}</span></td>
+                <td><DiffBadge d={p.difficulty} /></td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </main>
   );
