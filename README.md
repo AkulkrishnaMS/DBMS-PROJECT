@@ -89,12 +89,17 @@ JSON in and out. Login sets an httpOnly cookie named `token` (valid 8 hours).
 | POST `/api/submissions` | logged in | `problem_id, contest_id?, language` (`python` or `cpp`), `code` | `{submission_id, verdict, runtime_ms, compile_output, cases[]}` |
 | GET `/api/submissions` | logged in | | the caller's 50 latest submissions |
 | GET `/api/stats/verdicts` | admin | | verdict counts and times over all test-case runs (MongoDB aggregation) |
+| GET `/api/me` | logged in | | `{user_id, username, email, role, global_rating, global_rank, created_at, submissions, problems_solved}` |
+| GET `/api/contests/:id` | anyone | | contest with `phase`, `organizer`, `registered`, `is_registered` and `problems` (empty until the contest starts) |
+| GET `/api/leaderboard` | anyone | `?limit=50` (1 to 100) | `[{position, user_id, username, global_rating, global_rank, contests_played}]`, contestants only |
+| GET `/api/submissions/:id` | owner or admin | | the submission with its code plus `log` from MongoDB (404 for anyone else's) |
+| GET `/api/users/:username` | anyone | | public profile with `problems_solved` and `history:[{contest, old_rating, new_rating, delta, changed_at}]` |
 
 Errors are `{"error": "message"}` with: 400 bad input or a database rule (the message says which), 401 not logged in, 403 wrong role, 404 not found, 409 conflict (duplicate, contest not ended, already finalized), 500 server error.
 
 Gotcha for the UI: Postgres `COUNT`, `SUM`, `RANK` and `BIGSERIAL` values arrive as **strings** (for example `"score":"100"`). Convert them in the frontend.
 
-Not written yet (the UI will probably need them): current user (`/api/me`), contest details with its problems, global leaderboard, submission detail with logs, edit/delete problem.
+Not written yet: edit/delete problem.
 
 ## Roles and rules enforced by the database
 - Two roles: `admin` and `contestant`. Registration always creates a contestant; admins are created with `npm run create-admin`.
