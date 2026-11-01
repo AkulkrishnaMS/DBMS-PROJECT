@@ -1,10 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import ThemeToggle from './ThemeToggle';
 
 // Top bar. Asks /api/me who is logged in (401 = nobody) and shows the matching links.
 export default function Nav() {
   const [user, setUser] = useState(undefined); // undefined = still loading, null = logged out
+  const path = usePathname();
 
   useEffect(() => {
     fetch('/api/me')
@@ -18,25 +21,30 @@ export default function Nav() {
     window.location.href = '/';   // full reload so every page forgets the old user
   }
 
+  const link = (href, label) => (
+    <Link href={href} className={path === href || path.startsWith(href + '/') ? 'active' : ''}>{label}</Link>
+  );
+
   return (
     <header className="nav">
       <nav className="nav-inner">
         <Link href="/" className="brand">CP Judge</Link>
         <div className="nav-links">
-          <Link href="/problems">Problems</Link>
-          <Link href="/contests">Contests</Link>
-          <Link href="/leaderboard">Leaderboard</Link>
-          {user && <Link href="/submissions">My submissions</Link>}
+          {link('/problems', 'Problems')}
+          {link('/contests', 'Contests')}
+          {link('/leaderboard', 'Leaderboard')}
+          {user && link('/submissions', 'My submissions')}
+          {user && user.role === 'admin' && link('/admin', 'Admin')}
         </div>
         <div className="nav-user">
-          {user === undefined ? null : user ? (
+          {user && (
             <>
-              <span>{user.username}{user.role === 'admin' ? ' (admin)' : ''} · {user.global_rating}</span>
+              <span><Link href={`/users/${user.username}`}><strong>{user.username}</strong></Link>{user.role === 'admin' ? ' (admin)' : ''} · {user.global_rating}</span>
               <button className="btn btn-plain" onClick={logout}>Log out</button>
             </>
-          ) : (
-            <Link href="/login">Log in</Link>
           )}
+          {user === null && <Link href="/login" className="btn">Log in</Link>}
+          <ThemeToggle />
         </div>
       </nav>
     </header>
