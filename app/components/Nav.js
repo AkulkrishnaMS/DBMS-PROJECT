@@ -38,7 +38,7 @@ export default function Nav() {
         <div className="nav-user">
           {user && (
             <>
-              <span><strong>{user.username}</strong>{user.role === 'admin' ? ' (admin)' : ''} · {user.global_rating}</span>
+              <span><Link href={`/users/${user.username}`}><strong>{user.username}</strong></Link>{user.role === 'admin' ? ' (admin)' : ''} · {user.global_rating}</span>
               <button className="btn btn-plain" onClick={logout}>Log out</button>
             </>
           )}
