@@ -114,3 +114,16 @@ pre.codeblock { margin: 0; padding: 14px; overflow: auto; background: var(--surf
   border: 1px solid var(--border); border-radius: 6px; font-family: ui-monospace, Consolas, monospace;
   font-size: 14px; line-height: 1.5; }
 td.mono { font-family: ui-monospace, Consolas, monospace; font-size: 13px; white-space: pre-wrap; }
+
+/* ---------- contests ---------- */
+.phase { display: inline-block; padding: 1px 9px; border-radius: 3px; font-size: 13px; font-weight: 600;
+  border: 1px solid currentColor; text-transform: capitalize; }
+.phase-running { color: var(--ok); }
+.phase-upcoming { color: var(--warn); }
+.phase-ended, .phase-finished { color: var(--muted); }
+.notice { padding: 10px 14px; border: 1px solid var(--border); border-left: 4px solid var(--warn);
+  background: var(--surface); border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin: 28px 0 8px; }
+.section-head h3 { margin: 0; }
+td.num, th.num { text-align: right; }
+.me-row { background: var(--surface); font-weight: 600; }
