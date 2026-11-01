@@ -20,8 +20,10 @@ export default function ProblemPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [needLogin, setNeedLogin] = useState(false);
+  const [contestId, setContestId] = useState(null); // set when opened from a contest page (?contest=ID)
 
   useEffect(() => {
+    setContestId(new URLSearchParams(window.location.search).get('contest'));
     fetch(`/api/problems/${id}`).then(async (r) => {
       if (!r.ok) return setNotFound(true);
       setProblem(await r.json());
@@ -50,7 +52,8 @@ export default function ProblemPage() {
     try {
       const r = await fetch('/api/submissions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ problem_id: Number(id), language, code }),
+        body: JSON.stringify({ problem_id: Number(id), language, code,
+                               contest_id: contestId ? Number(contestId) : undefined }),
       });
       const data = await r.json().catch(() => ({}));
       if (r.status === 401) setNeedLogin(true);
@@ -98,6 +101,7 @@ export default function ProblemPage() {
         </section>
 
         <section>
+          {contestId && <p className="notice">Submitting in <Link href={`/contests/${contestId}`}>contest #{contestId}</Link></p>}
           <div className="editor-bar">
             <select value={language} onChange={(e) => changeLanguage(e.target.value)}>
               <option value="python">Python 3</option>
