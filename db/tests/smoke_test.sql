@@ -11,7 +11,7 @@ INSERT INTO problems(author_id, title, statement, difficulty)
   FROM users WHERE username = 'smoke_admin';
 
 INSERT INTO contests(organizer_id, name, start_time, end_time, status)
-  SELECT user_id, 'Smoke Round', now() - interval '3 hours', now() - interval '1 hour', 'running'
+  SELECT user_id, 'Smoke Round', now() - interval '3 hours', now() + interval '1 hour', 'running'
   FROM users WHERE username = 'smoke_admin';
 
 INSERT INTO contest_problems(contest_id, problem_id, points, position)
@@ -21,6 +21,10 @@ INSERT INTO contest_problems(contest_id, problem_id, points, position)
 INSERT INTO contest_registrations(contest_id, user_id)
   SELECT c.contest_id, u.user_id FROM contests c, users u
   WHERE c.name = 'Smoke Round' AND u.role = 'contestant' AND u.username LIKE 'smoke\_%';
+
+-- Players register while the contest is open (trigger T5 rejects late sign-ups);
+-- then "time passes" and the contest ends one hour ago.
+UPDATE contests SET end_time = now() - interval '1 hour' WHERE name = 'Smoke Round';
 
 INSERT INTO users(username, email, password_hash) VALUES ('smoke_dave','smoke_d@x.com','h');  -- not registered
 
@@ -92,8 +96,10 @@ BEGIN
     INSERT INTO problems(author_id, title, statement, difficulty, embedding)
     SELECT user_id, t, 's', 900, array_fill(0.1::real, ARRAY[384])::vector
     FROM users, (VALUES ('Smoke Sim A'), ('Smoke Sim B')) AS v(t) WHERE username = 'smoke_admin';
-    IF (SELECT COUNT(*) FROM find_similar_problems(
-            (SELECT problem_id FROM problems WHERE title = 'Smoke Sim A'), 5)) <> 1 THEN
+    -- Sim B has the same vector as Sim A, so it must be the nearest neighbour.
+    -- (Real problems with embeddings may also appear further down the list; that is fine.)
+    IF (SELECT title FROM find_similar_problems(
+            (SELECT problem_id FROM problems WHERE title = 'Smoke Sim A'), 5) LIMIT 1) <> 'Smoke Sim B' THEN
         RAISE EXCEPTION 'FAIL similarity'; END IF;
     RAISE NOTICE 'PASS: find_similar_problems works';
 END $$;
