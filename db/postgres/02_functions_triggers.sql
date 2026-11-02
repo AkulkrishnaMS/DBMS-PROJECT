@@ -95,6 +95,7 @@ CREATE TRIGGER trg_contest_finished
 -- Everything below runs in ONE transaction (a function call is atomic):
 -- if anything fails (crash, constraint), no rating or status change is persisted.
 -- Rating rule (simplified Elo-like): delta = round(60 * ((n+1)/2 - rank) / n)
+-- NOTE: replaced by db/postgres/04_fair_rating.sql (rates only participants, ties share the average place).
 CREATE OR REPLACE FUNCTION finalize_contest(p_contest_id INT) RETURNS INT AS $$
 DECLARE
     v_status  TEXT;

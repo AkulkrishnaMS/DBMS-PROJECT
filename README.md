@@ -104,12 +104,16 @@ Not written yet: edit/delete problem.
 ## Roles and rules enforced by the database
 - Two roles: `admin` and `contestant`. Registration always creates a contestant; admins are created with `npm run create-admin`.
 - Triggers: only admins can author problems or organize contests; a contest submission must come from a registered user, inside the contest time window, for a problem that belongs to that contest; a finished contest recalculates global ranks.
-- `finalize_contest()` runs as one transaction: it locks the contest row, writes rating changes for all registered users, and marks the contest finished. A second call is rejected.
+- `finalize_contest()` runs as one transaction: it locks the contest row, writes rating changes, and marks the contest finished. A second call is rejected.
+- Rating rules (`04_fair_rating.sql`): only participants are rated (registered users with at least one submission in the contest; a no-show keeps their rating). Solvers are ordered like the standings page (score, then exact solve time). Tied players share the average of their places, so the rating changes add up to zero. Change = `ROUND(60 * ((n + 1) / 2 - place) / n)`, n = participants.
+- Registration closes when a contest ends (`03_registration_rules.sql`).
 
 ## Project layout
 ```
 db/postgres/01_schema.sql              tables, constraints, indexes, contest_standings view
 db/postgres/02_functions_triggers.sql  4 triggers, finalize_contest(), find_similar_problems()
+db/postgres/03_registration_rules.sql  trigger: no registration after a contest ends
+db/postgres/04_fair_rating.sql        finalize_contest() with fair rating rules (replaces the one in 02)
 db/mongo/init.js                       test_cases and execution_logs (validators, indexes)
 db/mongo/queries/aggregations.js       MongoDB aggregation pipelines
 db/queries/important_queries.sql       SQL showcase queries
