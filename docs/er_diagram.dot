@@ -1,0 +1,124 @@
+// ER diagram (Chen notation) for the CP Judge database.
+// Render: dot -Kneato -Tpng docs/er_diagram.dot -o docs/er_diagram.png
+//
+// Legend
+//   rectangle        entity            diamond          relationship
+//   ellipse          attribute         underlined       primary key
+//   dashed ellipse   derived attribute (computed by the database, not entered)
+//   double line      total participation (every row of that entity takes part)
+//   single line      partial participation
+//   1 / N / M        cardinality
+// Foreign keys are not drawn as attributes: in an ER diagram they ARE the relationships.
+// MongoDB collections (test_cases, execution_logs) are not part of this relational model.
+graph ER {
+  layout=neato; overlap=false; splines=true; sep="+12"; outputorder=edgesfirst;
+  bgcolor=white; pad=0.3; dpi=150;
+  node [fontname="DejaVu Sans", fontsize=11, style=filled, fillcolor=white, color="#333333"];
+  edge [fontname="DejaVu Sans", fontsize=12, color="#333333"];
+
+  // ---------- entities ----------
+  node [shape=box, fillcolor="#e3f1e5", fontsize=13, penwidth=1.6, style="filled,bold"];
+  USERS [pos="0,0!"];
+  PROBLEMS [pos="9,0!"];
+  CONTESTS [pos="4.5,-6!"];
+  SUBMISSIONS [pos="9,-6!"];
+  RATINGS_HISTORY [label="RATINGS\nHISTORY", pos="0,-6!"];
+
+  // ---------- relationships ----------
+  node [shape=diamond, fillcolor="#fdf3dc", fontsize=10, penwidth=1.2, style=filled, height=0.75, width=1.5];
+  AUTHORS [pos="4.5,1.4!"];
+  ATTEMPTS [pos="9,-3!"];
+  REGISTERS [pos="2.2,-3!"];
+  ORGANIZES [pos="3.6,-1.6!"];
+  CONTAINS [pos="6.3,-3.4!"];
+  SUBMITS [pos="6.4,-1.4!"];
+  SCOPED_IN [pos="6.8,-6!"];
+  HAS_RATING [pos="0,-3!"];
+  AFFECTS [pos="2.2,-6!"];
+
+  // ---------- attributes ----------
+  node [shape=ellipse, fillcolor=white, fontsize=10, penwidth=1, style=filled, height=0.35, width=0];
+  u_id [label=<<u>user_id</u>>, pos="-2.2,1.6!"];
+  u_name [label="username", pos="-2.9,0.9!"];
+  u_email [label="email", pos="-3.1,0.2!"];
+  u_pw [label="password_hash", pos="-3.1,-0.5!"];
+  u_role [label="role", pos="-2.8,-1.2!"];
+  u_rating [label="global_rating", pos="-0.9,1.9!"];
+  u_rank [label="global_rank", style="filled,dashed", pos="0.6,2.0!"];
+  u_created [label="created_at", pos="-2.0,-1.8!"];
+
+  p_id [label=<<u>problem_id</u>>, pos="11.3,1.6!"];
+  p_title [label="title", pos="12.0,0.9!"];
+  p_stmt [label="statement", pos="12.2,0.2!"];
+  p_diff [label="difficulty", pos="12.1,-0.5!"];
+  p_tl [label="time_limit_ms", pos="11.8,-1.2!"];
+  p_ml [label="memory_limit_kb", pos="11.1,-1.85!"];
+  p_emb [label="embedding", pos="9.9,1.95!"];
+  p_tsv [label="search_tsv", style="filled,dashed", pos="8.5,2.05!"];
+  p_created [label="created_at", pos="7.2,2.6!"];
+
+  c_id [label=<<u>contest_id</u>>, pos="3.0,-7.9!"];
+  c_name [label="name", pos="4.0,-8.4!"];
+  c_start [label="start_time", pos="5.2,-8.4!"];
+  c_end [label="end_time", pos="6.2,-7.9!"];
+  c_status [label="status", pos="3.2,-7.1!"];
+  c_applied [label="ratings_applied", pos="5.9,-7.2!"];
+
+  s_id [label=<<u>submission_id</u>>, pos="11.4,-4.4!"];
+  s_lang [label="language", pos="12.0,-5.1!"];
+  s_code [label="code", pos="12.1,-5.8!"];
+  s_verdict [label="verdict", pos="12.0,-6.5!"];
+  s_rt [label="runtime_ms", pos="11.6,-7.2!"];
+  s_mem [label="memory_kb", pos="10.6,-7.8!"];
+  s_at [label="submitted_at", pos="9.0,-8.0!"];
+
+  r_id [label=<<u>rating_id</u>>, pos="-2.4,-5.0!"];
+  r_old [label="old_rating", pos="-2.7,-5.8!"];
+  r_new [label="new_rating", pos="-2.5,-6.6!"];
+  r_at [label="changed_at", pos="-1.6,-7.4!"];
+
+  // relationship attributes (they become columns of the junction tables)
+  cp_points [label="points", pos="5.0,-3.0!"];
+  cp_pos [label="position", pos="5.0,-3.8!"];
+  cr_at [label="registered_at", pos="1.1,-2.3!"];
+
+  // ---------- attribute edges ----------
+  edge [len=1];
+  USERS -- {u_id u_name u_email u_pw u_role u_rating u_rank u_created};
+  PROBLEMS -- {p_id p_title p_stmt p_diff p_tl p_ml p_emb p_tsv p_created};
+  CONTESTS -- {c_id c_name c_start c_end c_status c_applied};
+  SUBMISSIONS -- {s_id s_lang s_code s_verdict s_rt s_mem s_at};
+  RATINGS_HISTORY -- {r_id r_old r_new r_at};
+  CONTAINS -- {cp_points cp_pos};
+  REGISTERS -- cr_at;
+
+  // ---------- relationship edges ----------
+  // label = cardinality of the entity at that end of the line; color="#333333:invis:#333333" draws a double line (total participation)
+  edge [penwidth=1.3, fontname="DejaVu Sans Bold", fontsize=13];
+USERS -- AUTHORS [label="1"];
+AUTHORS -- PROBLEMS [label="N", color="#333333:invis:#333333"];
+
+USERS -- ORGANIZES [label="1"];
+ORGANIZES -- CONTESTS [label="N", color="#333333:invis:#333333"];
+
+USERS -- REGISTERS [label="M"];
+REGISTERS -- CONTESTS [label="N"];
+
+CONTESTS -- CONTAINS [label="M"];
+CONTAINS -- PROBLEMS [label="N"];
+
+USERS -- SUBMITS [label="1"];
+SUBMITS -- SUBMISSIONS [label="N", color="#333333:invis:#333333"];
+
+PROBLEMS -- ATTEMPTS [label="1"];
+ATTEMPTS -- SUBMISSIONS [label="N", color="#333333:invis:#333333"];
+
+CONTESTS -- SCOPED_IN [label="1"];
+SCOPED_IN -- SUBMISSIONS [label="N"];
+
+USERS -- HAS_RATING [label="1"];
+HAS_RATING -- RATINGS_HISTORY [label="N", color="#333333:invis:#333333"];
+
+CONTESTS -- AFFECTS [label="1"];
+AFFECTS -- RATINGS_HISTORY [label="N", color="#333333:invis:#333333"];
+}
