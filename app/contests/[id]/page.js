@@ -40,6 +40,19 @@ export default function ContestPage() {
     setBusy(false);
   }
 
+  // Only possible before the start; the API refuses later (a player could otherwise dodge a rating loss).
+  async function unregister() {
+    if (!window.confirm('Unregister from this contest?')) return;
+    setBusy(true); setError('');
+    const r = await fetch(`/api/contests/${id}/register`, { method: 'DELETE' });
+    if (r.ok) await load();
+    else {
+      const d = await r.json().catch(() => ({}));
+      setError(d.error || 'Could not unregister.');
+    }
+    setBusy(false);
+  }
+
   if (missing) return <main><h1>Contest not found</h1><Link href="/contests">Back to contests</Link></main>;
   if (!c) return <p className="muted">Loading…</p>;
 
@@ -57,6 +70,9 @@ export default function ContestPage() {
       </div>
 
       {me && c.is_registered && <div className="notice" style={{ borderLeftColor: 'var(--ok)' }}>You are registered for this contest.</div>}
+      {me && c.is_registered && c.phase === 'upcoming' && (
+        <p><button className="btn btn-plain" onClick={unregister} disabled={busy}>{busy ? 'Working…' : 'Unregister'}</button></p>
+      )}
       {me && !c.is_registered && open && (
         <p><button className="btn" onClick={register} disabled={busy}>{busy ? 'Registering…' : 'Register'}</button></p>
       )}
