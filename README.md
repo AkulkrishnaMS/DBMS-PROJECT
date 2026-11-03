@@ -80,10 +80,13 @@ JSON in and out. Login sets an httpOnly cookie named `token` (valid 8 hours).
 | GET `/api/problems` | anyone | `?q=text&min=800&max=1600` | `[{problem_id, title, difficulty}]` |
 | POST `/api/problems` | admin | `title, statement, difficulty, time_limit_ms?, memory_limit_kb?, cases:[{input, expected_output, is_sample}]` | 201 `{problem_id}` |
 | GET `/api/problems/:id` | anyone | | problem + sample cases only (hidden cases never leave the server) |
+| PATCH `/api/problems/:id` | admin | any of `title, statement, difficulty, time_limit_ms, memory_limit_kb` | the updated problem with `needs_embedding` (true when the text changed; run `npm run embed`) |
+| DELETE `/api/problems/:id` | admin | | `{ok:true}`; 409 if the problem has submissions or is in a contest (ON DELETE RESTRICT) |
 | GET `/api/problems/:id/similar` | anyone | `?k=5` (1 to 20) | `[{problem_id, title, difficulty, similarity}]`, nearest problems by embedding (cosine similarity) |
 | GET `/api/contests` | anyone | | contests with `phase` (upcoming/running/ended/finished), `registered`, `problems` |
 | POST `/api/contests` | admin | `name, start_time, end_time` (ISO, UTC), `problems:[{problem_id, points}]` | 201 `{contest_id}` (created in one transaction) |
-| POST `/api/contests/:id/register` | logged in | | 201 `{ok:true}` |
+| POST `/api/contests/:id/register` | logged in | | 201 `{ok:true}`; 400 once the contest has ended (trigger T5) |
+| DELETE `/api/contests/:id/register` | logged in | | `{ok:true}`; unregister, only before the contest starts (409 after) |
 | GET `/api/contests/:id/standings` | anyone | | `[{standing, username, solved, score, penalty_min}]` |
 | POST `/api/contests/:id/finalize` | admin | | `{users_rated}`; only after the contest has ended |
 | POST `/api/submissions` | logged in | `problem_id, contest_id?, language` (`python` or `cpp`), `code` | `{submission_id, verdict, runtime_ms, compile_output, cases[]}` |

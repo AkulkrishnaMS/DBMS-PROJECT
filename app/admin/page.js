@@ -4,11 +4,13 @@ import Link from 'next/link';
 import ProblemForm from './ProblemForm';
 import ContestForm from './ContestForm';
 import FinalizeForm from './FinalizeForm';
+import ManageProblems from './ManageProblems';
 
-// Admin hub. Three tabs, each one just calls an API route Akul already wrote.
+// Admin hub. Four tabs, each one just calls an API route Akul already wrote.
 // The routes check the admin role themselves; the check here only decides what to show.
 const TABS = [
   { key: 'problem', label: 'New problem' },
+  { key: 'manage', label: 'Manage problems' },
   { key: 'contest', label: 'New contest' },
   { key: 'finalize', label: 'Finalize contest' },
 ];
@@ -36,6 +38,7 @@ export default function AdminPage() {
         ))}
       </div>
       {tab === 'problem' && <ProblemForm />}
+      {tab === 'manage' && <ManageProblems />}
       {tab === 'contest' && <ContestForm />}
       {tab === 'finalize' && <FinalizeForm />}
     </main>

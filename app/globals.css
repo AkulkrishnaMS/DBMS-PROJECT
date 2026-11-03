@@ -55,6 +55,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); ou
 .btn-plain { background: transparent; color: var(--text); border-color: var(--border); font-weight: 500; }
 .btn-plain:hover { background: var(--surface); color: var(--text); border-color: var(--muted); }
 .btn-wide { width: 100%; margin-top: 18px; }
+.btn-danger { color: var(--danger); }
+.btn-danger:hover { color: var(--danger); border-color: var(--danger); }
 .link-btn { background: none; border: none; padding: 0; font: inherit; color: var(--accent); cursor: pointer; }
 .link-btn:hover { text-decoration: underline; }
 .error { color: var(--danger); font-size: 14px; margin-top: 12px; }
