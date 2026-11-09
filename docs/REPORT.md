@@ -45,6 +45,9 @@ _(explanation: see Lesson 2)_
 
 **How they connect.** PostgreSQL is the source of truth. MongoDB documents refer to it by ID (`test_cases.problem_id`, `execution_logs.submission_id`).
 
+"Why not one database for everything?”
+Users and submissions are connected data. In PostgreSQL each fact is stored once and linked by foreign keys (normalization), and the database enforces rules across tables with constraints and triggers. In MongoDB we’d have to copy data into documents (update anomalies) and couldn’t enforce links between collections.
+
 ## 8. Data dictionary / schema description
 
 _(to write)_
