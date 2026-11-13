@@ -528,7 +528,87 @@ _(to add)_
 
 ## 13. Testing results
 
-_(to write)_
+### 13.1 Automated database tests
+
+Four SQL test files in `db/tests` check the database rules directly. Each file creates its own test data inside a transaction and ends with `ROLLBACK`, so running the tests never changes real data, and the tests do not depend on what data is already in the database. Each check prints `PASS`, or stops with `FAIL`.
+
+Run all of them:
+
+```bash
+for t in smoke registration rating dml; do
+  echo "== $t"
+  docker exec -i judge_postgres psql -U "$PG_USER" -d "$PG_DB" < db/tests/${t}_test.sql 2>&1 | grep -E "PASS|FAIL"
+done
+```
+
+| File | Check | What it proves | Result |
+|---|---|---|---|
+| `smoke_test.sql` | T1 | a non-admin cannot author a problem (trigger T1) | PASS |
+| | T2a | an unregistered user cannot submit in a contest (trigger T2) | PASS |
+| | T2b | a submission after the contest ends is rejected (trigger T2) | PASS |
+| | ratings | finalize gives the expected ratings: 1220, 1200, 1180 | PASS |
+| | T4 | global ranks are recalculated after finalize (trigger T4) | PASS |
+| | double finalize | a contest cannot be finalized twice (transaction + `ratings_applied`) | PASS |
+| | similarity | `find_similar_problems` returns the closest problem first | PASS |
+| `registration_test.sql` | R1 | registering for a running contest works | PASS |
+| | R2 | registering after the contest ended is rejected (trigger T5) | PASS |
+| | R3 | registering for a finished contest is rejected (trigger T5) | PASS |
+| `rating_test.sql` | G1 | tied players share the average place: +24, +6, +6, −18, −18 | PASS |
+| | G2 | the rating changes add up to 0 | PASS |
+| | G3 | a registered user who never submitted is not rated | PASS |
+| | G4 | two players 20 seconds apart are not treated as tied | PASS |
+| `dml_test.sql` | U1 | UPDATE changes the title and full-text search follows | PASS |
+| | U2 | difficulty 5000 is rejected by the CHECK constraint | PASS |
+| | D1 | a problem with submissions cannot be deleted (RESTRICT) | PASS |
+| | D2 | a problem in a contest cannot be deleted (RESTRICT) | PASS |
+| | D3 | an unused problem can be deleted | PASS |
+| | D4 | deleting a contest removes its problem list but keeps the problems (CASCADE) | PASS |
+
+**Total: 20 of 20 checks pass.**
+
+![Database test results](img/tests.png)
+
+### 13.2 API tests
+
+The API was tested by sending requests directly with `curl`, including invalid input and users without permission:
+
+| Test | Expected | Result |
+|---|---|---|
+| a contestant tries to edit or delete a problem | 403 Forbidden | pass |
+| edit with no fields / difficulty 5000 / a title that already exists | 400 / 400 / 409 | pass |
+| edit only the difficulty | saved, embedding kept | pass |
+| edit the statement | saved, embedding cleared for recomputation | pass |
+| delete a problem that has submissions | 409 with a clear message | pass |
+| delete an unused problem, then delete it again | 200, then 404 | pass |
+| unregister before the contest starts | 200; registering again works | pass |
+| unregister after the contest started | 409 | pass |
+| register after the contest ended | 400 "Registration closed" | pass |
+| read another user's submission | 404 (code stays private) | pass |
+| missing user, contest or problem; non-numeric id | 404 / 400 | pass |
+
+### 13.3 Manual application tests
+
+The whole application was clicked through in the browser:
+
+| Flow | Result |
+|---|---|
+| register, log in, log out | works |
+| problem list, search, problem page with samples | works |
+| submit a correct Python solution | AC |
+| contest: register, submit, live standings, finalize, ratings on the leaderboard | works |
+| admin: create a problem, create a contest | works |
+| admin: edit a problem, delete refused for a used problem, delete an unused one | works |
+| unregister from an upcoming contest | works; not offered once the contest has started |
+| my submissions, leaderboard, profile pages | load correctly |
+
+### 13.4 Bugs found by testing and fixed
+
+| Bug | How it was found | Fix |
+|---|---|---|
+| A user could register after a contest ended and still be rated | API test of late registration | trigger T5 (`03_registration_rules.sql`) |
+| Tied players all received the best shared place, so even players who solved nothing could gain rating | rating test with ties | ties share the average place (`04_fair_rating.sql`) |
+| Ratings compared solve times in minutes, the standings page in seconds, so they could disagree | reading the view and the function side by side | ratings now use the view's own ranking (`04_fair_rating.sql`) |
+| The similarity test failed once real problems had embeddings | running the tests on real data | the test now checks only its own data |
 
 ## 14. Conclusion and future enhancements
 
