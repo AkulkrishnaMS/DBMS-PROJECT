@@ -293,7 +293,196 @@ Keeping vectors up to date: `npm run embed` fills every problem whose embedding 
 
 ## 10. Important queries
 
-_(to write)_
+All queries are in `db/queries/important_queries.sql` (17 queries) and `db/mongo/queries/aggregations.js` (3 pipelines). Run them with:
+
+```bash
+docker exec -i judge_postgres psql -U "$PG_USER" -d "$PG_DB" < db/queries/important_queries.sql
+docker exec -i judge_mongo mongosh -u "$MONGO_USER" -p "$MONGO_PASSWORD" --authenticationDatabase admin "$MONGO_DB" --quiet < db/mongo/queries/aggregations.js
+```
+
+| # | Question it answers | SQL concept |
+|---|---|---|
+| 1 | Which submissions were not accepted? | SELECT, WHERE, ORDER BY |
+| 2 | Who submitted what? | JOIN of 3 tables |
+| 3 | Score of every registered player, including those who solved nothing | LEFT JOIN, COALESCE |
+| 4 | Total and accepted submissions per user | GROUP BY, COUNT, FILTER |
+| 5 | Users with at least 2 submissions | HAVING |
+| 6 | Acceptance rate and slowest run per problem | aggregates (COUNT, MAX, ROUND) |
+| 7 | Users with at least one accepted submission | subquery with IN |
+| 8 | Contestants who never got an accepted answer | correlated subquery, NOT EXISTS |
+| 9 | Rating change per player per contest | CTE (WITH) |
+| 10 | Leaderboard with the gap to the leader | window functions RANK(), MAX() OVER () |
+| 11 | Running submission count per user | window function with PARTITION BY |
+| 12 | Contest standings | the `contest_standings` view |
+| 13 | Problems matching a search text, best match first | full-text search, ts_rank |
+| 14 | Is the index used? | EXPLAIN |
+| 15 | Update and delete, then undo | UPDATE, DELETE, BEGIN, ROLLBACK |
+| 16 | Delete a user who wrote problems | ON DELETE RESTRICT (expected error) |
+| 17 | Delete a user and their dependent rows | ON DELETE CASCADE (rolled back) |
+
+The most important ones are shown below with their output.
+
+### Query 2: JOIN of three tables
+
+```sql
+SELECT s.submission_id, u.username, p.title, s.verdict
+FROM submissions s
+JOIN users u    ON u.user_id    = s.user_id
+JOIN problems p ON p.problem_id = s.problem_id
+ORDER BY s.submission_id;
+```
+
+A submission stores only IDs; the JOINs bring in the username and problem title.
+
+![Query 2 output](img/q02.png)
+
+### Query 3: LEFT JOIN with COALESCE
+
+```sql
+SELECT u.username, COALESCE(cs.score, 0) AS score, COALESCE(cs.solved, 0) AS solved
+FROM contests c
+JOIN contest_registrations cr ON cr.contest_id = c.contest_id
+JOIN users u                  ON u.user_id     = cr.user_id
+LEFT JOIN contest_standings cs ON cs.contest_id = c.contest_id AND cs.user_id = u.user_id
+WHERE c.name = 'Round 1'
+ORDER BY score DESC, u.username;
+```
+
+An inner JOIN would drop players who solved nothing, because they have no row in the standings. LEFT JOIN keeps them, and COALESCE turns their NULL score into 0.
+
+![Query 3 output](img/q03.png)
+
+### Queries 4 and 5: GROUP BY and HAVING
+
+```sql
+SELECT u.username,
+       COUNT(*)                                 AS total,
+       COUNT(*) FILTER (WHERE s.verdict = 'AC') AS accepted
+FROM submissions s
+JOIN users u ON u.user_id = s.user_id
+GROUP BY u.username
+ORDER BY total DESC;
+
+SELECT u.username, COUNT(*) AS total
+FROM submissions s
+JOIN users u ON u.user_id = s.user_id
+GROUP BY u.username
+HAVING COUNT(*) >= 2;
+```
+
+WHERE filters rows **before** grouping; HAVING filters groups **after** grouping, so it can use COUNT(*).
+
+![Queries 4 and 5 output](img/q04_05.png)
+
+### Query 8: correlated subquery
+
+```sql
+SELECT u.username
+FROM users u
+WHERE u.role = 'contestant'
+  AND NOT EXISTS (SELECT 1 FROM submissions s
+                  WHERE s.user_id = u.user_id AND s.verdict = 'AC');
+```
+
+The inner query refers to `u.user_id` from the outer query, so it is evaluated for each user.
+
+![Query 8 output](img/q08.png)
+
+### Query 10: window functions
+
+```sql
+SELECT username, global_rating,
+       RANK() OVER (ORDER BY global_rating DESC)  AS rnk,
+       MAX(global_rating) OVER () - global_rating AS behind_leader
+FROM users
+WHERE role = 'contestant';
+```
+
+Unlike GROUP BY, a window function keeps every row and adds a value computed over other rows.
+
+![Query 10 output](img/q10.png)
+
+### Query 12: the standings view
+
+```sql
+SELECT standing, username, solved, score, penalty_min
+FROM contest_standings
+WHERE contest_id = (SELECT contest_id FROM contests WHERE name = 'Round 1')
+ORDER BY standing;
+```
+
+![Query 12 output](img/q12.png)
+
+### Query 13: full-text search
+
+```sql
+SELECT title, ROUND(ts_rank(search_tsv, q)::numeric, 3) AS relevance
+FROM problems, websearch_to_tsquery('english', 'double') AS q
+WHERE search_tsv @@ q
+ORDER BY relevance DESC;
+```
+
+![Query 13 output](img/q13.png)
+
+### Query 14: EXPLAIN
+
+```sql
+SET enable_seqscan = off;
+EXPLAIN
+SELECT submission_id, verdict FROM submissions
+WHERE user_id = (SELECT user_id FROM users WHERE username = 'admin')
+ORDER BY submitted_at DESC;
+RESET enable_seqscan;
+```
+
+The plan shows `Index Scan using idx_submissions_user`. With only a few rows, PostgreSQL would normally choose a sequential scan because it is cheaper, so sequential scans are switched off for this demonstration only.
+
+![Query 14 output](img/q14.png)
+
+### Queries 15 to 17: UPDATE, DELETE and delete rules inside a rolled-back transaction
+
+```sql
+BEGIN;
+UPDATE problems SET difficulty = 1200 WHERE title = 'Double It';
+DELETE FROM submissions WHERE verdict IN ('TLE', 'MLE') AND contest_id IS NULL;
+ROLLBACK;                                      -- nothing is saved
+
+BEGIN;
+DELETE FROM users WHERE username = 'admin';   -- ERROR: RESTRICT, admin wrote problems
+ROLLBACK;
+
+BEGIN;
+DELETE FROM users WHERE username = 'alice';   -- CASCADE removes her submissions, registrations, ratings
+ROLLBACK;
+```
+
+![Queries 15 to 17 output](img/q15_17.png)
+
+### Vector similarity query
+
+```sql
+SELECT * FROM find_similar_problems(
+    (SELECT problem_id FROM problems WHERE title = 'Two Sum'), 3);
+```
+
+Returns the three problems whose embeddings are closest by cosine distance, with similarity = 1 − distance.
+
+
+### MongoDB aggregation: verdict distribution
+
+```javascript
+db.execution_logs.aggregate([
+  { $unwind: '$per_case' },
+  { $group: { _id: '$per_case.verdict',
+              runs:   { $sum: 1 },
+              avg_ms: { $avg: '$per_case.time_ms' },
+              max_ms: { $max: '$per_case.time_ms' } } },
+  { $sort: { runs: -1 } },
+]);
+```
+
+`$unwind` turns one log with five test-case results into five documents; `$group` then counts them per verdict, like GROUP BY in SQL.
+
 
 ## 11. System architecture
 
