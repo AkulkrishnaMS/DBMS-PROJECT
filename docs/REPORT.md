@@ -34,6 +34,7 @@ The ER diagram uses Chen notation: rectangles are entities, diamonds are relatio
 ![Relational schema](schema_diagram.png)
 
 The ER diagram was converted to tables with these rules: each entity became a table with its own primary key; each 1:N relationship became a foreign key on the N side (for example problems.author_id); each M:N relationship became a junction table with a composite primary key (contest_registrations, contest_problems), and relationship attributes became its columns (registered_at, points, position). Total participation became NOT NULL, and partial participation allows NULL (submissions.contest_id, where NULL means a practice submission). Delete rules follow the meaning of the data: RESTRICT protects problems and authors that are still referenced, CASCADE removes rows that mean nothing without their parent, and SET NULL keeps a deleted contest’s submissions as practice submissions. UNIQUE constraints enforce real rules, for example one rating change per user per contest.
+
 ## 7. Database choice and justification
 
 **PostgreSQL (structured data).** Users, problems, contests, submissions and ratings have a fixed format and are closely connected; for example, a submission belongs to a user, a problem and possibly a contest. This data must stay correct, so we use PostgreSQL: foreign keys keep the links valid, CHECK constraints and triggers reject bad data (for example, registering after a contest has ended), transactions make finalizing a contest all-or-nothing, and JOINs produce results like the contest standings.
@@ -44,10 +45,7 @@ The ER diagram was converted to tables with these rules: each entity became a ta
 
 **How they connect.** PostgreSQL is the source of truth. MongoDB documents refer to it by ID (`test_cases.problem_id`, `execution_logs.submission_id`).
 
-"Why not one database for everything?”
-Users and submissions are connected data. In PostgreSQL each fact is stored once and linked by foreign keys (normalization), and the database enforces rules across tables with constraints and triggers. In MongoDB we’d have to copy data into documents (update anomalies) and couldn’t enforce links between collections.
-
-## 8. Data dictionary / schema description
+**Why not one database for everything?** Users and submissions are connected data. In PostgreSQL each fact is stored once and linked by foreign keys (normalization), and the database enforces rules across tables with constraints and triggers. In MongoDB we’d have to copy data into documents (update anomalies) and couldn’t enforce links between collections.
 
 ## 8. Data dictionary / schema description
 
@@ -164,13 +162,11 @@ Each document refers to PostgreSQL by ID. A `$jsonSchema` validator checks the s
 | Field | Type | Rules | Description |
 |---|---|---|---|
 | submission_id | int or long | required, **unique index** | Links to `submissions.submission_id` |
-| compile_output | string or null | | Compiler errors (for C, C++, Java) |
+| compile_output | string or null | | Compiler errors (C++ only; Python is not compiled) |
 | per_case | array | | One entry per test case run: `case_idx`, `verdict`, `time_ms`, `stdout` (first 500 characters), `stderr`; judging stops at the first failing case |
 | judged_at | date | required, indexed | When judging finished |
 
 ## 9. SQL / NoSQL / vector database implementation
-
-
 
 ### 9.1 SQL: DDL
 
@@ -486,7 +482,45 @@ db.execution_logs.aggregate([
 
 ## 11. System architecture
 
-_(to write)_
+![System architecture](architecture.png)
+
+The system has three layers.
+
+**1. Browser (presentation).** The pages are React components served by Next.js: problem list with search, problem page with a code editor, contests and live standings, leaderboard, profile, and the admin pages. The browser talks to the server only through the API, sending and receiving JSON.
+
+**2. Next.js server (application logic).**
+
+- **API routes** (`app/api`) receive each request, check it, and run the database queries. All SQL uses parameters (`$1`, `$2`), never string concatenation, to prevent SQL injection.
+- **Authentication** (`lib/auth.js`): passwords are stored as bcrypt hashes. After login the server sets a signed JWT in an httpOnly cookie (JavaScript in the page cannot read it). Each protected route checks the token and the role (admin or contestant).
+- **Judge** (`lib/judge.js`): for each submission it starts a fresh Docker container (`python:3.12-slim` or `gcc:13`), compiles C++ if needed, runs the code on every test case, compares the output, and stops at the first failing case. Each container has no network, limited memory, CPU and processes, a read-only file system, and is removed after the run, so submitted code cannot harm the server.
+
+**3. Data layer (Docker Compose).**
+
+- **PostgreSQL 16 with pgvector** (`judge_postgres`): the source of truth. Tables, constraints, triggers, the standings view, `finalize_contest()`, full-text search and vector search. The SQL files in `db/postgres` run automatically when the container is created for the first time.
+- **MongoDB 7** (`judge_mongo`): test cases and judge logs, with validators and indexes from `db/mongo/init.js`.
+
+**Offline embedding script.** `npm run embed` (`scripts/embed.js`) loads the `all-MiniLM-L6-v2` model, turns each problem's title and statement into 384 numbers, and stores them in `problems.embedding`. It only processes problems whose embedding is empty.
+
+**Request flow example: submitting a solution**
+
+1. The browser sends the code to `POST /api/submissions`.
+2. The API checks the login cookie, then inserts the submission into PostgreSQL. Trigger T2 checks registration, contest time and contest problem.
+3. The API reads the test cases from MongoDB.
+4. The judge runs the code in sandbox containers.
+5. The API updates the verdict in PostgreSQL and stores the detailed log in MongoDB.
+6. The browser shows the verdict; the standings view includes the result immediately.
+
+**Technology summary**
+
+| Part | Technology |
+|---|---|
+| Front end and API | Next.js 14, React 18 |
+| Relational database | PostgreSQL 16 + pgvector |
+| Document database | MongoDB 7 |
+| Code execution | Docker containers |
+| Authentication | bcrypt, JWT (jose) |
+| Embeddings | all-MiniLM-L6-v2 via @huggingface/transformers |
+| Version control | Git and GitHub |
 
 ## 12. Application screenshots
 

@@ -1,0 +1,37 @@
+// System architecture of CP Judge.
+// Render: dot -Tpng docs/architecture.dot -o docs/architecture.png
+digraph arch {
+  rankdir=LR; bgcolor=white; pad=0.3; dpi=150; nodesep=0.45; ranksep=0.9; newrank=true;
+  node [fontname="DejaVu Sans", fontsize=11, shape=box, style="rounded,filled", fillcolor=white, color="#333333", penwidth=1.3];
+  edge [fontname="DejaVu Sans", fontsize=9.5, color="#444444", penwidth=1.2, arrowsize=0.8];
+
+  browser [label=<<b>Browser</b><br/><font point-size="9.5">React pages (Next.js)<br/>problem list, editor, contests,<br/>standings, leaderboard, admin</font>>, fillcolor="#eef3fb"];
+
+  subgraph cluster_app {
+    label=<<b>Next.js server</b> (Node.js, npm run dev)>; fontname="DejaVu Sans"; fontsize=11;
+    style="rounded,dashed"; color="#888888";
+    api [label=<<b>API routes</b> (app/api)<br/><font point-size="9.5">auth, problems, contests,<br/>submissions, leaderboard, stats</font>>];
+    auth [label=<<b>Auth</b> (lib/auth.js)<br/><font point-size="9.5">bcrypt password hash<br/>JWT in an httpOnly cookie<br/>role check: admin / contestant</font>>];
+    judge [label=<<b>Judge</b> (lib/judge.js)<br/><font point-size="9.5">compile, run each test case,<br/>compare output, stop at first failure</font>>];
+  }
+
+  subgraph cluster_docker {
+    label=<<b>Docker</b> (docker compose)>; fontname="DejaVu Sans"; fontsize=11;
+    style="rounded,dashed"; color="#888888";
+    pg [label=<<b>PostgreSQL 16 + pgvector</b><br/><font point-size="9.5">container judge_postgres<br/>7 tables, view, triggers,<br/>finalize_contest(), full-text,<br/>vector(384) + HNSW index</font>>, shape=cylinder, fillcolor="#e3f1e5"];
+    mongo [label=<<b>MongoDB 7</b><br/><font point-size="9.5">container judge_mongo<br/>test_cases, execution_logs<br/>validators, aggregation</font>>, shape=cylinder, fillcolor="#fdf3dc"];
+    sandbox [label=<<b>Sandbox container</b><br/><font point-size="9.5">one per run, then removed<br/>python:3.12-slim or gcc:13<br/>no network, memory / CPU /<br/>process limits, read-only</font>>, fillcolor="#fbeaea"];
+  }
+
+  embed [label=<<b>scripts/embed.js</b> (offline)<br/><font point-size="9.5">all-MiniLM-L6-v2<br/>title + statement → 384 numbers</font>>, fillcolor="#f3eefb"];
+
+  browser -> api [label="HTTP / JSON\n(fetch)"];
+  api -> auth [label="every request", style=dashed, arrowhead=none];
+  api -> pg [label="SQL with $1 parameters\n(users, problems, contests,\nsubmissions, ratings)"];
+  api -> mongo [label="read samples,\nwrite judge logs,\naggregation"];
+  api -> judge [label="new submission"];
+  judge -> sandbox [label="docker run\n(code + input)"];
+  embed -> pg [label="UPDATE problems\nSET embedding", style=dashed];
+
+  { rank=same; api; embed; }
+}
